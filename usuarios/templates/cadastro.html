@@ -6,6 +6,17 @@
 {% block 'conteudo' %} 
 
 <div class="container">
+
+    {% if messages %}
+
+        {% for i in messages %}           
+            <div class="alert {{i.tags}}" role="alert">
+                {{i}}
+            </div>
+        {% endfor %}
+
+    {% endif %} 
+
     <br>
     {% if status == '0' %}
     <div class="alert alert-success" role="alert">

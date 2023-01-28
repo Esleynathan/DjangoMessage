@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.messages import constants
 
 def login (request):
-    messages.add_message(request, constants.SUCCESS, 'Você entrou na nossa pagina, seja bem vindo.')
+    messages.add_message(request, constants.SUCCESS, 'Você entrou em nossa pagina, seja bem vindo.')
     status = request.GET.get ('status')
     return render(request, 'login.html', {'status': status})
     

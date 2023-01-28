@@ -7,6 +7,16 @@
 <div class="container">
     <br>
 
+    {% if messages %}
+
+        {% for i in messages %}           
+        <div class="alert {{i.tags}}" role="alert">
+            {{i}}
+        </div>
+        {% endfor %}
+
+    {% endif %}
+
     {% if status == '1' %}
     <div class="alert alert-warning" role="alert">
         Email ou senha invalidos
