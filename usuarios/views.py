@@ -7,7 +7,6 @@ from django.contrib import messages
 from django.contrib.messages import constants
 
 def login (request):
-    messages.add_message(request, constants.SUCCESS, 'Você entrou em nossa pagina, seja bem vindo.')
     status = request.GET.get ('status')
     return render(request, 'login.html', {'status': status})
     
@@ -21,15 +20,19 @@ def valida_cadastro (request):
     email = request.POST.get('email')    
     senha = request.POST.get('senha')
 
-    if len(nome.strip()) == 0 or len(email.strip()) == 0:
-        return redirect('/auth/cadastro/?status=1')
+    if len(nome.strip()) == 0 or len(email.strip()) == 0:        
+        messages.add_message(request, constants.ERROR, 'Nome e email não podem estar vazio.')
+        
+        return redirect('/auth/cadastro/')
 
     if len(senha) < 8:
-        return redirect('/auth/cadastro/?status=2')
+        messages.add_message(request, constants.ERROR, 'Sua senha deve ter no minimo 8 caracteres.')
+        return redirect('/auth/cadastro/')
     
     usuario = Usuario.objects.filter(email = email)
     if len(usuario) > 0:
-        return redirect('/auth/cadastro/?status=3')
+        messages.add_message(request, constants.ERROR, 'Email já cadastrado.')
+        return redirect('/auth/cadastro/')
 
     try:
         senha = sha256 (senha.encode()).hexdigest()
@@ -38,9 +41,13 @@ def valida_cadastro (request):
                         email=email,
                         senha= senha)
         usuario.save()
-        return redirect('/auth/cadastro/?status=0')
+        
+        messages.add_message(request, constants.SUCCESS, 'Cadastro realizado com suceso.')
+        return redirect('/auth/cadastro/')
     except:
-        return redirect('/auth/cadastro/?status=4')
+        
+        messages.add_message(request, constants.ERROR, 'Erro interno do sistema.')
+        return redirect('/auth/cadastro/')
 
 def valida_login(request):
     email = request.POST.get('email')    
@@ -48,16 +55,15 @@ def valida_login(request):
     senha = sha256 (senha.encode()).hexdigest()
 
     usuario = Usuario.objects.filter(email = email).filter(senha = senha)
-    if len(usuario) == 0:
-        return redirect ('/auth/login/?status=1')
+    if len(usuario) == 0:        
+        messages.add_message(request, constants.WARNING, 'Email ou senha invalidos.')
+        return redirect ('/auth/login/')
     elif len(usuario) > 0:
         request.session['logado'] = True
         request.session['usuario_id'] = usuario[0].id       
         return redirect ('/plataforma/home')
 
 def sair(request):    
-    try:
-        del request.session['logado']         
-        return redirect ('/auth/login/')
-    except KeyError:
-        return redirect('/auth/login/?status=3')
+    request.session.flush()    
+    messages.add_message(request, constants.WARNING, 'Faça login antes de acessar o sistema.')
+    return redirect('/auth/login/')
